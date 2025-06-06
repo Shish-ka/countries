@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="js/alpine.js" defer></script>
+    <script src="js/tailwindcss.js"></script>
+</head>
+<body>
+    <section x-data="{
+        countries: [],
+        async dowload() {
+            let response = await fetch('http://localhost:3000/countries')
+            this.countries = await response.json()
+        },
+        async addCountry(){
+            const reader = new FileReader()
+            reader.readAsDataURL(new FormData($refs.add).get('flag'))
+            reader.onload=(()=> {
+                this.addCountry2(reader.result)
+            })
+        },
+        async addCountry2(e) {
+            
+                let response = await fetch('http://localhost:3000/countries', {
+                method: 'POST',
+                body: JSON.stringify ({
+                    'name': new FormData($refs.add).get('name'),
+                    'capital': new FormData($refs.add).get('capital'),
+                    'flag': e
+                })
+                })
+            
+            response = await response.json()
+            this.dowload()
+        },
+        async deleteCountry(id) {
+            let response = await fetch(`http://localhost:3000/countries/${id}`, {
+                method: 'DELETE'
+            })
+            response = await response.json()
+            this.dowload()
+        }
+    }"
+    class="grid px-[5%] py-5 gap-y-4">
+        <h1 class="font-bold text-3xl">Countries</h1>
+
+        <form action="" class="bg-gray-200 p-4 grid gap-y-2" x-on:submit.prevent="addCountry()" x-ref="add" enctype='multipart/form-data'>
+            <h3 class="font-bold text-xl">Добавить страну</h3>
+
+            <input type="text" placeholder="Название" name="name" class="border-b border-gray-400 p-2">
+
+            <input type="text" placeholder="Столица" name="capital" class="border-b border-gray-400 p-2">
+
+            <input type="file" name="flag" class="p-2">
+
+            <button type="submit" class="bg-gray-400 p-2">Добавить</button>
+        </form>
+
+        <button x-on:click.prevent="dowload()" class="bg-gray-400 p-2">Download</button>
+
+        <ul class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <template x-for="country in countries">
+                <li class="grid grid-rows-[300px_auto_auto_auto_auto] gap-y-2 bg-gray-200 p-4">
+                    <img x-bind:src="country.flag" alt="" class="h-full w-full object-cover">
+
+                    <p>ID страны: <span x-text="country.id"></span></p>
+
+                    <p>Название страны: <span x-text="country.name"></span></p>
+
+                    <p>Столица страны: <span x-text="country.capital"></span></p>
+
+                    <div>
+                        <button class="bg-gray-400 p-2" x-on:click="deleteCountry(country.id)">Delete</button>
+
+                        <button class="bg-gray-400 p-2">Update</button>
+                    </div>
+                </li>
+            </template>
+        </ul>
+    </section>
+</body>
+</html>
