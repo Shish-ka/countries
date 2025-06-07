@@ -67,15 +67,75 @@
 
                     <p>ID страны: <span x-text="country.id"></span></p>
 
-                    <p>Название страны: <span x-text="country.name"></span></p>
+                    <div x-data="{
+                        isEdit: false,
+                        async save(id) {
+                            let response = await fetch(`http://localhost:3000/countries/${id}`, {
+                                method: 'PUT',
+                                body: JSON.stringify({
+                                    'name': $refs.name.value,
+                                    'capital': this.country.capital,
+                                    'flag': this.country.flag
+                                })
+                            })
+                            this.dowload()
+                            this.isEdit = !this.isEdit
+                        }
+                    }"
+                    class="grid">
+                            <p>Название страны: <span x-text="country.name" x-show="!isEdit" x-on:dblclick="isEdit = !isEdit"></span></p>
+                            
+                            <input type="text" x-show="isEdit" x-on:click.outside="save(country.id)" x-bind:value="country.name" x-ref="name" class="border-b border-gray-400 p-2">
 
-                    <p>Столица страны: <span x-text="country.capital"></span></p>
+                        <!-- <button class="bg-gray-400 p-2" x-on:click="isEdit = !isEdit" x-show="!isEdit">Edit</button>
 
-                    <div>
-                        <button class="bg-gray-400 p-2" x-on:click="deleteCountry(country.id)">Delete</button>
-
-                        <button class="bg-gray-400 p-2">Update</button>
+                        <button class="bg-gray-400 p-2" x-on:click="" x-show="isEdit">Save</button> -->
                     </div>
+
+                    <div x-data="{
+                        isEdit: false,
+                        async save(id) {
+                            let response = await fetch(`http://localhost:3000/countries/${id}`, {
+                                method: 'PUT',
+                                body: JSON.stringify({
+                                    'name': this.country.name,
+                                    'capital': $refs.capital.value,
+                                    'flag': this.country.flag
+                                })
+                            })
+                            this.dowload()
+                            this.isEdit = !this.isEdit
+                        }
+                    }"
+                    class="grid">
+                            <p>Столица страны: <span x-text="country.capital" x-show="!isEdit" x-on:dblclick="isEdit = !isEdit"></span></p>
+                            
+                            <input type="text" x-show="isEdit" x-on:click.outside="save(country.id)" x-bind:value="country.capital" x-ref="capital" class="border-b border-gray-400 p-2">
+                    </div>
+
+                    <button class="bg-gray-400 p-2" x-on:click="deleteCountry(country.id)">Delete</button>
+
+                    <div x-data="{
+                        isMore: false,
+                        cities: [],
+                        async downloadCities(id) {
+                            this.isMore = !this.isMore
+                            if(this.isMore) {
+                                let response = await fetch(`http://localhost:3000/cities?country_id=${id}`)
+                                this.cities = await response.json()
+                            }
+                        }
+                    }"
+                    class="grid">
+                        <button class="bg-gray-400 p-2" x-on:click="downloadCities(country.id)">More</button>
+
+                        <ul x-show="isMore">
+                            <template x-for="city in cities">
+                                <li x-text="city.name"></li>
+                            </template>
+                        </ul>
+                    </div>
+
                 </li>
             </template>
         </ul>
